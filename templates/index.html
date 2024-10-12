@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click to Mark</title>
+    <style>
+        #black-box {
+            width: 500px;
+            height: 500px;
+            background-color: black;
+            position: relative;
+            margin: 50px auto;
+            border: 2px solid white;
+        }
+        .white-mark {
+            width: 10px;
+            height: 10px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="black-box"></div>
+    <button id="send-btn">Send Coordinates</button>
+
+    <script>
+        const blackBox = document.getElementById('black-box');
+        const sendBtn = document.getElementById('send-btn');
+
+        let coordinates = []; // List to store all the click coordinates
+
+        blackBox.addEventListener('click', function(event) {
+            const rect = blackBox.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            // Create a new white mark
+            const whiteMark = document.createElement('div');
+            whiteMark.classList.add('white-mark');
+            whiteMark.style.left = `${x - 5}px`;
+            whiteMark.style.top = `${y - 5}px`;
+            blackBox.appendChild(whiteMark);
+
+            // Add coordinates to the list
+            coordinates.push({ x: x, y: y });
+        });
+
+        // Send coordinates to the Flask server
+        sendBtn.addEventListener('click', function() {
+            fetch('/submit-coordinates', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(coordinates), // Send the coordinates as JSON
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Coordinates sent successfully:', data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+
+</body>
+</html>
